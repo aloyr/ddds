@@ -1,0 +1,56 @@
+version: '3'
+services:
+  www:
+    image: nginx:alpine
+    environment:
+      - SITES_PORT=80
+      - SITES_PARENT="${HOME}"
+      - SITES_FRAGMENT="/Sites"
+      - SITES_ROOT="${SITES_PARENT}${SITES_FRAGMENT}
+    volumes:
+      - ./config/sites:/etc/nginx/conf.d
+      - ${SITES_ROOT}:/var/www/sites
+    ports:
+      - "${SITES_PORT}:80"
+    links:
+      - php
+  db:
+    image: mariadb
+    environment:
+      - DB_PORT=3306
+    volumes:
+      - ddds_db:/var/lib/mysql
+      - ./config/databases:/docker-entrypoint-initdb.d
+    ports:
+      - "${DB_PORT}:3306"
+  php:
+    image: aloyr/php
+    environment:
+      - SITES_PARENT="${HOME}"
+      - SITES_FRAGMENT="/Sites"
+      - SITES_ROOT="${SITES_PARENT}${SITES_FRAGMENT}
+    volumes:
+      - ${SITES_ROOT}:/var/www/sites
+      - ./lib/drush:/usr/local/bin/drush
+      - ./config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    expose:
+      - "9000"
+    links:
+      - db
+      - redis
+  redis:
+    image: redis:alpine
+    expose:
+      - "6379"
+  dns:
+    image: ruudud/devdns
+    environment:
+      - HOSTMACHINE_IP="172.16.123.45"
+    ports:
+      - "53:53/udp"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+volumes:
+  ddds_db:
+    labels:
+      - "persistent"
