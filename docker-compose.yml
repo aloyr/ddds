@@ -18,6 +18,7 @@ services:
     image: mariadb
     environment:
       - DB_PORT=3306
+      - MYSQL_ROOT_PASSWORD=changeme
     volumes:
       - ddds_db:/var/lib/mysql
       - ./config/databases:/docker-entrypoint-initdb.d
