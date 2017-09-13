@@ -1,12 +1,10 @@
 version: '3'
 services:
-  www:
+  nginx:
     image: nginx:alpine
     environment:
-      - SITES_PORT=80
-      - SITES_PARENT="${HOME}"
-      - SITES_FRAGMENT="/Sites"
-      - SITES_ROOT="${SITES_PARENT}${SITES_FRAGMENT}
+      - SITES_PORT
+      - SITES_ROOT
     volumes:
       - ./config/sites:/etc/nginx/conf.d
       - ${SITES_ROOT}:/var/www/sites
@@ -14,11 +12,12 @@ services:
       - "${SITES_PORT}:80"
     links:
       - php
-  db:
+  mariadb:
     image: mariadb
     environment:
-      - DB_PORT=3306
-      - MYSQL_ROOT_PASSWORD=changeme
+      - HOME
+      - DB_PORT
+      - MYSQL_ROOT_PASSWORD="changeme"
     volumes:
       - ddds_db:/var/lib/mysql
       - ./config/databases:/docker-entrypoint-initdb.d
@@ -27,17 +26,15 @@ services:
   php:
     image: aloyr/php
     environment:
-      - SITES_PARENT="${HOME}"
-      - SITES_FRAGMENT="/Sites"
-      - SITES_ROOT="${SITES_PARENT}${SITES_FRAGMENT}
+      - SITES_ROOT
     volumes:
       - ${SITES_ROOT}:/var/www/sites
       - ./lib/drush:/usr/local/bin/drush
-      - ./config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ./lib/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
     expose:
       - "9000"
     links:
-      - db
+      - mariadb
       - redis
   redis:
     image: redis:alpine
