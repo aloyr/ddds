@@ -30,7 +30,7 @@ services:
     volumes:
       - ${SITES_ROOT}:/var/www/sites
       - ./lib/drush:/usr/local/bin/drush
-      - ./lib/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ./lib/php-custom.ini:/usr/local/etc/php/conf.d/php-custom.ini
     expose:
       - "9000"
     links:
